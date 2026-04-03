@@ -16,8 +16,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 label { display: block; font-size: 13px; color: #666; margin-bottom: 6px; }
 input, select, textarea { width: 100%; padding: 8px 12px; font-size: 14px; border: 1px solid #ddd; border-radius: 8px; background: #fff; color: #1a1a1a; font-family: inherit; }
 input.na { background: #f5f5f5; color: #bbb; border-color: #eee; }
-textarea { resize: vertical; min-height: 80px; }
+textarea { resize: vertical; min-height: 60px; }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
 .input-with-na { display: flex; gap: 6px; align-items: center; }
 .input-with-na input { flex: 1; }
 .na-btn { padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 12px; cursor: pointer; background: transparent; color: #999; white-space: nowrap; font-family: inherit; }
@@ -27,18 +28,29 @@ textarea { resize: vertical; min-height: 80px; }
 .btn.primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
 .btn.primary:hover { opacity: 0.85; }
 .btn.secondary { border-color: #999; color: #444; }
+.btn.small { padding: 6px 12px; font-size: 13px; width: auto; margin-top: 0; }
 .status { margin-top: 1rem; padding: 10px 12px; border-radius: 8px; font-size: 13px; display: none; }
 .status.success { background: #f0faf4; color: #1a7a3e; display: block; }
 .status.error { background: #fff0f0; color: #c0392b; display: block; }
 .status.loading { background: #f5f5f5; color: #666; display: block; }
 .section-title { font-size: 13px; font-weight: 500; color: #999; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
-.upload-area { border: 1.5px dashed #ddd; border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; margin-bottom: 1rem; transition: border-color 0.2s; }
+.trade-card { border: 1px solid #eee; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+.trade-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.trade-card-title { font-size: 14px; font-weight: 500; }
+.pnl-display { font-size: 13px; padding: 4px 10px; border-radius: 6px; background: #f5f5f5; color: #666; }
+.pnl-display.positive { background: #f0faf4; color: #1a7a3e; }
+.pnl-display.negative { background: #fff0f0; color: #c0392b; }
+.total-pnl { padding: 12px; border-radius: 8px; background: #f5f5f5; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+.total-pnl .amount { font-size: 18px; font-weight: 500; }
+.total-pnl.positive .amount { color: #1a7a3e; }
+.total-pnl.negative .amount { color: #c0392b; }
+.divider { border: none; border-top: 1px solid #f0f0f0; margin: 1rem 0; }
+.upload-area { border: 1.5px dashed #ddd; border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; margin-bottom: 1rem; }
 .upload-area:hover { border-color: #999; }
-.upload-area.dragover { border-color: #1a1a1a; background: #f9f9f9; }
 .upload-area p { font-size: 14px; color: #999; margin-top: 8px; }
-.upload-area .icon { font-size: 28px; }
 .preview-img { max-width: 100%; border-radius: 8px; margin-bottom: 1rem; display: none; }
 .parse-status { font-size: 13px; color: #666; margin-bottom: 1rem; display: none; }
+.pip-info { font-size: 12px; color: #999; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -46,21 +58,19 @@ textarea { resize: vertical; min-height: 80px; }
 <div class="tabs">
   <button class="tab active" onclick="switchTab('scan', event)">Scan Signal</button>
   <button class="tab" onclick="switchTab('signal', event)">Manual Signal</button>
-  <button class="tab" onclick="switchTab('trade', event)">My Trade</button>
+  <button class="tab" onclick="switchTab('trade', event)">My Trades</button>
 </div>
 
 <!-- SCAN TAB -->
 <div id="section-scan" class="section active">
   <div class="section-title">Scan signal from screenshot</div>
-
   <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
-    <div class="icon">📷</div>
+    <div style="font-size:28px">📷</div>
     <p>Tap to upload screenshot or drag & drop</p>
   </div>
   <input type="file" id="file-input" accept="image/*" style="display:none" onchange="handleFile(this.files[0])" />
   <img id="preview-img" class="preview-img" />
   <div id="parse-status" class="parse-status"></div>
-
   <div id="scan-fields" style="display:none">
     <div class="row">
       <div class="field">
@@ -90,39 +100,18 @@ textarea { resize: vertical; min-height: 80px; }
       </div>
     </div>
     <div class="row">
-      <div class="field">
-        <label>SL</label>
-        <input type="number" id="sc-sl" step="any" />
-      </div>
-      <div class="field">
-        <label>TP1</label>
-        <input type="number" id="sc-tp1" step="any" />
-      </div>
+      <div class="field"><label>SL</label><input type="number" id="sc-sl" step="any" /></div>
+      <div class="field"><label>TP1</label><input type="number" id="sc-tp1" step="any" /></div>
     </div>
     <div class="row">
-      <div class="field">
-        <label>TP2</label>
-        <input type="number" id="sc-tp2" step="any" />
-      </div>
-      <div class="field">
-        <label>TP3</label>
-        <input type="number" id="sc-tp3" step="any" />
-      </div>
+      <div class="field"><label>TP2</label><input type="number" id="sc-tp2" step="any" /></div>
+      <div class="field"><label>TP3</label><input type="number" id="sc-tp3" step="any" /></div>
     </div>
     <div class="row">
-      <div class="field">
-        <label>TP4</label>
-        <input type="number" id="sc-tp4" step="any" />
-      </div>
-      <div class="field">
-        <label>TP5</label>
-        <input type="number" id="sc-tp5" step="any" />
-      </div>
+      <div class="field"><label>TP4</label><input type="number" id="sc-tp4" step="any" /></div>
+      <div class="field"><label>TP5</label><input type="number" id="sc-tp5" step="any" /></div>
     </div>
-    <div class="field">
-      <label>Notes</label>
-      <textarea id="sc-notes" placeholder="Optional notes..."></textarea>
-    </div>
+    <div class="field"><label>Notes</label><textarea id="sc-notes"></textarea></div>
     <button class="btn primary" onclick="logScannedSignal()">Log signal to Notion</button>
     <button class="btn secondary" onclick="resetScan()" style="margin-top:8px;">Scan another</button>
   </div>
@@ -228,17 +217,16 @@ textarea { resize: vertical; min-height: 80px; }
       <option>SL Hit</option>
     </select>
   </div>
-  <div class="field">
-    <label>Notes</label>
-    <textarea id="s-notes" placeholder="Optional notes..."></textarea>
-  </div>
+  <div class="field"><label>Notes</label><textarea id="s-notes" placeholder="Optional notes..."></textarea></div>
   <button class="btn primary" onclick="logSignal()">Log signal to Notion</button>
   <div id="status-signal" class="status"></div>
 </div>
 
 <!-- TRADE TAB -->
 <div id="section-trade" class="section">
-  <div class="section-title">Log my trade</div>
+  <div class="section-title">Log my trades</div>
+
+  <!-- Common fields -->
   <div class="row">
     <div class="field">
       <label>Broker</label>
@@ -249,7 +237,7 @@ textarea { resize: vertical; min-height: 80px; }
     </div>
     <div class="field">
       <label>Instrument</label>
-      <select id="t-instrument">
+      <select id="t-instrument" onchange="updatePipInfo()">
         <option>XAUUSD</option>
         <option>EURUSD</option>
         <option>GBPUSD</option>
@@ -278,31 +266,30 @@ textarea { resize: vertical; min-height: 80px; }
       </select>
     </div>
   </div>
-  <div class="row">
-    <div class="field"><label>Actual Entry</label><input type="number" id="t-entry" placeholder="2320" step="any" /></div>
-    <div class="field"><label>Actual Exit</label><input type="number" id="t-exit" placeholder="2335" step="any" /></div>
-  </div>
-  <div class="row">
-    <div class="field"><label>Lot Size</label><input type="number" id="t-lot" placeholder="0.2" step="any" /></div>
-    <div class="field"><label>P&L (EUR)</label><input type="number" id="t-pnl" placeholder="+350" step="any" /></div>
-  </div>
+
+  <hr class="divider" />
+
+  <!-- Number of trades -->
   <div class="field">
-    <label>Exit Reason</label>
-    <select id="t-exit-reason">
-      <option>TP1</option>
-      <option>TP2</option>
-      <option>TP3</option>
-      <option>TP4</option>
-      <option>TP5</option>
-      <option>Manual</option>
-      <option>SL</option>
+    <label>How many trades did you open?</label>
+    <select id="t-count" onchange="renderTradeCards()">
+      <option value="1">1 trade</option>
+      <option value="2">2 trades</option>
+      <option value="3">3 trades</option>
+      <option value="4">4 trades</option>
+      <option value="5">5 trades</option>
     </select>
   </div>
-  <div class="field">
-    <label>Notes</label>
-    <textarea id="t-notes" placeholder="Optional notes..."></textarea>
+
+  <div id="trade-cards"></div>
+
+  <div id="total-pnl-box" class="total-pnl" style="display:none">
+    <span>Total P&L</span>
+    <span class="amount" id="total-pnl-amount">€0.00</span>
   </div>
-  <button class="btn primary" onclick="logTrade()">Log trade to Notion</button>
+
+  <div class="field"><label>Notes</label><textarea id="t-notes" placeholder="Optional notes..."></textarea></div>
+  <button class="btn primary" onclick="logTrades()">Log all trades to Notion</button>
   <div id="status-trade" class="status"></div>
 </div>
 
@@ -311,13 +298,18 @@ const SIGNALS_WEBHOOK = 'https://hook.eu1.make.com/ccgmft39iu0ek8sd3nl2iaf6clgtd
 const TRADES_WEBHOOK = 'https://hook.eu1.make.com/un8prk2b9detbl8i9eb4m7cf7y51077a';
 const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages';
 const naFields = {};
-let currentImageBase64 = null;
+
+const PIP_VALUES = {
+  XAUUSD: 1, XAGUSD: 1, BTCUSD: 1,
+  EURUSD: 10, GBPUSD: 10, USDJPY: 10, GBPJPY: 10
+};
 
 function switchTab(tab, event) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   event.target.classList.add('active');
   document.getElementById('section-' + tab).classList.add('active');
+  if (tab === 'trade') renderTradeCards();
 }
 
 function setStatus(id, type, msg) {
@@ -346,22 +338,152 @@ function toggleNA(inputId, btnId) {
   }
 }
 
-function val(id) { return document.getElementById(id).value; }
+function val(id) { return document.getElementById(id) ? document.getElementById(id).value : ''; }
 function numVal(id) {
-  const v = document.getElementById(id).value;
-  return v === '' ? 0 : Number(v);
+  const el = document.getElementById(id);
+  if (!el) return 0;
+  return el.value === '' ? 0 : Number(el.value);
 }
 
-function handleDragOver(e) {
-  e.preventDefault();
-  document.getElementById('upload-area').classList.add('dragover');
+function calcPnL(entry, exit, lots, direction, instrument) {
+  if (!entry || !exit || !lots) return 0;
+  const diff = direction === 'Long' ? exit - entry : entry - exit;
+  const pipVal = PIP_VALUES[instrument] || 10;
+  return parseFloat((diff * lots * pipVal * 100).toFixed(2));
 }
-function handleDragLeave(e) {
-  document.getElementById('upload-area').classList.remove('dragover');
+
+function renderTradeCards() {
+  const count = parseInt(val('t-count'));
+  const container = document.getElementById('trade-cards');
+  container.innerHTML = '';
+
+  for (let i = 1; i <= count; i++) {
+    const card = document.createElement('div');
+    card.className = 'trade-card';
+    card.innerHTML = `
+      <div class="trade-card-header">
+        <span class="trade-card-title">Trade ${i}</span>
+        <span class="pnl-display" id="pnl-display-${i}">P&L: —</span>
+      </div>
+      <div class="row3">
+        <div class="field">
+          <label>Entry</label>
+          <input type="number" id="t-entry-${i}" placeholder="0.0" step="any" oninput="updatePnL(${i})" />
+        </div>
+        <div class="field">
+          <label>Exit</label>
+          <input type="number" id="t-exit-${i}" placeholder="0.0" step="any" oninput="updatePnL(${i})" />
+        </div>
+        <div class="field">
+          <label>Lots</label>
+          <input type="number" id="t-lot-${i}" placeholder="0.01" step="any" oninput="updatePnL(${i})" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Exit Reason</label>
+        <select id="t-exit-reason-${i}">
+          <option>TP1</option>
+          <option value="TP2" ${i >= 2 ? 'selected' : ''}>TP2</option>
+          <option value="TP3" ${i >= 3 ? 'selected' : ''}>TP3</option>
+          <option>TP4</option>
+          <option>TP5</option>
+          <option>Manual</option>
+          <option>SL</option>
+        </select>
+      </div>
+    `;
+    container.appendChild(card);
+  }
+  document.getElementById('total-pnl-box').style.display = count > 1 ? 'flex' : 'none';
 }
+
+function updatePnL(i) {
+  const entry = numVal(`t-entry-${i}`);
+  const exit = numVal(`t-exit-${i}`);
+  const lots = numVal(`t-lot-${i}`);
+  const direction = val('t-direction');
+  const instrument = val('t-instrument');
+  const pnl = calcPnL(entry, exit, lots, direction, instrument);
+  const display = document.getElementById(`pnl-display-${i}`);
+  if (entry && exit && lots) {
+    display.textContent = `P&L: €${pnl >= 0 ? '+' : ''}${pnl}`;
+    display.className = `pnl-display ${pnl >= 0 ? 'positive' : 'negative'}`;
+  } else {
+    display.textContent = 'P&L: —';
+    display.className = 'pnl-display';
+  }
+  updateTotalPnL();
+}
+
+function updateTotalPnL() {
+  const count = parseInt(val('t-count'));
+  const direction = val('t-direction');
+  const instrument = val('t-instrument');
+  let total = 0;
+  for (let i = 1; i <= count; i++) {
+    const entry = numVal(`t-entry-${i}`);
+    const exit = numVal(`t-exit-${i}`);
+    const lots = numVal(`t-lot-${i}`);
+    total += calcPnL(entry, exit, lots, direction, instrument);
+  }
+  total = parseFloat(total.toFixed(2));
+  const box = document.getElementById('total-pnl-box');
+  const amountEl = document.getElementById('total-pnl-amount');
+  amountEl.textContent = `€${total >= 0 ? '+' : ''}${total}`;
+  box.className = `total-pnl ${total >= 0 ? 'positive' : 'negative'}`;
+}
+
+function updatePipInfo() { updateTotalPnL(); }
+
+async function logTrades() {
+  const count = parseInt(val('t-count'));
+  const today = new Date().toISOString().split('T')[0];
+  const broker = val('t-broker');
+  const instrument = val('t-instrument');
+  const direction = val('t-direction');
+  const followed = val('t-followed');
+  const notes = val('t-notes');
+
+  setStatus('status-trade', 'loading', `Sending ${count} trade(s) to Notion...`);
+
+  try {
+    for (let i = 1; i <= count; i++) {
+      const entry = numVal(`t-entry-${i}`);
+      const exit = numVal(`t-exit-${i}`);
+      const lots = numVal(`t-lot-${i}`);
+      const exitReason = val(`t-exit-reason-${i}`);
+      const pnl = calcPnL(entry, exit, lots, direction, instrument);
+
+      await fetch(TRADES_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: broker + ' ' + instrument + ' ' + direction + ' ' + today + (count > 1 ? ` #${i}` : ''),
+          date: today,
+          broker: broker,
+          instrument: instrument,
+          direction: direction,
+          actual_entry: entry,
+          actual_exit: exit,
+          lot_size: lots,
+          pnl_eur: pnl,
+          exit_reason: exitReason,
+          followed_signal: followed,
+          notes: notes
+        })
+      });
+    }
+    setStatus('status-trade', 'success', `${count} trade(s) logged to Notion.`);
+  } catch(e) {
+    setStatus('status-trade', 'error', 'Error: ' + e.message);
+  }
+}
+
+function handleDragOver(e) { e.preventDefault(); document.getElementById('upload-area').style.borderColor = '#999'; }
+function handleDragLeave(e) { document.getElementById('upload-area').style.borderColor = '#ddd'; }
 function handleDrop(e) {
   e.preventDefault();
-  document.getElementById('upload-area').classList.remove('dragover');
+  document.getElementById('upload-area').style.borderColor = '#ddd';
   const file = e.dataTransfer.files[0];
   if (file && file.type.startsWith('image/')) handleFile(file);
 }
@@ -371,7 +493,6 @@ function handleFile(file) {
   const reader = new FileReader();
   reader.onload = (e) => {
     const base64 = e.target.result.split(',')[1];
-    currentImageBase64 = base64;
     const preview = document.getElementById('preview-img');
     preview.src = e.target.result;
     preview.style.display = 'block';
@@ -386,22 +507,6 @@ async function parseSignalFromImage(base64, mediaType) {
   statusEl.textContent = 'Reading signal from screenshot...';
   document.getElementById('scan-fields').style.display = 'none';
 
-  const prompt = `This is a trading signal screenshot from a Telegram group. Extract all signal data and return ONLY valid JSON, no markdown, no explanation.
-
-Return exactly this structure:
-{
-  "instrument": "e.g. XAUUSD, EURUSD, BTCUSD etc",
-  "direction": "Long" or "Short" (Buy=Long, Sell=Short),
-  "entry_zone": "price or range as string, e.g. 2318-2322",
-  "sl": number or 0 if not found,
-  "tp1": number or 0 if not found,
-  "tp2": number or 0 if not found,
-  "tp3": number or 0 if not found,
-  "tp4": number or 0 if not found,
-  "tp5": number or 0 if not found,
-  "notes": "any other relevant info from the signal"
-}`;
-
   try {
     const res = await fetch(ANTHROPIC_API, {
       method: 'POST',
@@ -413,15 +518,14 @@ Return exactly this structure:
           role: 'user',
           content: [
             { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-            { type: 'text', text: prompt }
+            { type: 'text', text: 'This is a trading signal. Extract data and return ONLY valid JSON:\n{"instrument":"e.g. XAUUSD","direction":"Long or Short (Buy=Long, Sell=Short)","entry_zone":"price or range","sl":number or 0,"tp1":number or 0,"tp2":number or 0,"tp3":number or 0,"tp4":number or 0,"tp5":number or 0,"notes":"any other info"}' }
           ]
         }]
       })
     });
     const data = await res.json();
     const raw = data.content.map(i => i.text || '').join('');
-    const clean = raw.replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(clean);
+    const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
 
     document.getElementById('sc-instrument').value = parsed.instrument || '';
     document.getElementById('sc-direction').value = parsed.direction === 'Short' ? 'Short' : 'Long';
@@ -437,26 +541,23 @@ Return exactly this structure:
     statusEl.textContent = 'Signal parsed. Review and log.';
     document.getElementById('scan-fields').style.display = 'block';
   } catch(e) {
-    statusEl.textContent = 'Could not parse signal: ' + e.message;
+    statusEl.textContent = 'Could not parse: ' + e.message;
   }
 }
 
 async function logScannedSignal() {
   setStatus('status-scan', 'loading', 'Sending to Notion...');
   const today = new Date().toISOString().split('T')[0];
-  const source = val('sc-source');
-  const instrument = val('sc-instrument');
-  const direction = val('sc-direction');
   try {
     await fetch(SIGNALS_WEBHOOK, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name: source + ' ' + instrument + ' ' + direction + ' ' + today,
+        name: val('sc-source') + ' ' + val('sc-instrument') + ' ' + val('sc-direction') + ' ' + today,
         date: today,
-        source: source,
-        instrument: instrument,
-        direction: direction,
+        source: val('sc-source'),
+        instrument: val('sc-instrument'),
+        direction: val('sc-direction'),
         entry_zone: val('sc-entry'),
         sl: numVal('sc-sl'),
         tp1: numVal('sc-tp1'),
@@ -480,60 +581,39 @@ function resetScan() {
   document.getElementById('parse-status').style.display = 'none';
   document.getElementById('status-scan').className = 'status';
   document.getElementById('file-input').value = '';
-  currentImageBase64 = null;
-}
-
-async function postWebhook(url, data, statusId) {
-  setStatus(statusId, 'loading', 'Sending to Notion...');
-  try {
-    await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    setStatus(statusId, 'success', 'Logged to Notion.');
-  } catch(e) {
-    setStatus(statusId, 'error', 'Error: ' + e.message);
-  }
 }
 
 async function logSignal() {
   const today = new Date().toISOString().split('T')[0];
-  await postWebhook(SIGNALS_WEBHOOK, {
-    name: val('s-source') + ' ' + val('s-instrument') + ' ' + val('s-direction') + ' ' + today,
-    date: today,
-    source: val('s-source'),
-    instrument: val('s-instrument'),
-    direction: val('s-direction'),
-    entry_zone: val('s-entry'),
-    sl: numVal('s-sl'),
-    tp1: numVal('s-tp1'),
-    tp2: numVal('s-tp2'),
-    tp3: numVal('s-tp3'),
-    tp4: numVal('s-tp4'),
-    tp5: numVal('s-tp5'),
-    result: val('s-result'),
-    notes: val('s-notes')
-  }, 'status-signal');
+  setStatus('status-signal', 'loading', 'Sending to Notion...');
+  try {
+    await fetch(SIGNALS_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: val('s-source') + ' ' + val('s-instrument') + ' ' + val('s-direction') + ' ' + today,
+        date: today,
+        source: val('s-source'),
+        instrument: val('s-instrument'),
+        direction: val('s-direction'),
+        entry_zone: val('s-entry'),
+        sl: numVal('s-sl'),
+        tp1: numVal('s-tp1'),
+        tp2: numVal('s-tp2'),
+        tp3: numVal('s-tp3'),
+        tp4: numVal('s-tp4'),
+        tp5: numVal('s-tp5'),
+        result: val('s-result'),
+        notes: val('s-notes')
+      })
+    });
+    setStatus('status-signal', 'success', 'Logged to Notion.');
+  } catch(e) {
+    setStatus('status-signal', 'error', 'Error: ' + e.message);
+  }
 }
 
-async function logTrade() {
-  const today = new Date().toISOString().split('T')[0];
-  await postWebhook(TRADES_WEBHOOK, {
-    name: val('t-broker') + ' ' + val('t-instrument') + ' ' + val('t-direction') + ' ' + today,
-    date: today,
-    broker: val('t-broker'),
-    instrument: val('t-instrument'),
-    direction: val('t-direction'),
-    actual_entry: numVal('t-entry'),
-    actual_exit: numVal('t-exit'),
-    lot_size: numVal('t-lot'),
-    pnl_eur: numVal('t-pnl'),
-    exit_reason: val('t-exit-reason'),
-    followed_signal: val('t-followed'),
-    notes: val('t-notes')
-  }, 'status-trade');
-}
+renderTradeCards();
 </script>
 </body>
 </html>
