@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trading Journal</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #1a1a1a; padding: 1rem; max-width: 600px; margin: 0 auto; }
+.tabs { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.tab { padding: 8px 16px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; cursor: pointer; background: transparent; color: #666; }
+.tab.active { background: #f5f5f5; color: #1a1a1a; border-color: #999; }
+.section { display: none; }
+.section.active { display: block; }
+.field { margin-bottom: 1rem; }
+label { display: block; font-size: 13px; color: #666; margin-bottom: 6px; }
+input, select, textarea { width: 100%; padding: 8px 12px; font-size: 14px; border: 1px solid #ddd; border-radius: 8px; background: #fff; color: #1a1a1a; font-family: inherit; }
+input.na { background: #f5f5f5; color: #bbb; border-color: #eee; }
+textarea { resize: vertical; min-height: 80px; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.input-with-na { display: flex; gap: 6px; align-items: center; }
+.input-with-na input { flex: 1; }
+.na-btn { padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 12px; cursor: pointer; background: transparent; color: #999; white-space: nowrap; font-family: inherit; }
+.na-btn.active { background: #f5f5f5; color: #bbb; border-color: #eee; }
+.btn { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; cursor: pointer; background: transparent; color: #1a1a1a; font-family: inherit; margin-top: 0.5rem; }
+.btn:hover { background: #f5f5f5; }
+.btn.primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+.btn.primary:hover { opacity: 0.85; }
+.btn.secondary { border-color: #999; color: #444; }
+.status { margin-top: 1rem; padding: 10px 12px; border-radius: 8px; font-size: 13px; display: none; }
+.status.success { background: #f0faf4; color: #1a7a3e; display: block; }
+.status.error { background: #fff0f0; color: #c0392b; display: block; }
+.status.loading { background: #f5f5f5; color: #666; display: block; }
+.section-title { font-size: 13px; font-weight: 500; color: #999; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.upload-area { border: 1.5px dashed #ddd; border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; margin-bottom: 1rem; transition: border-color 0.2s; }
+.upload-area:hover { border-color: #999; }
+.upload-area.dragover { border-color: #1a1a1a; background: #f9f9f9; }
+.upload-area p { font-size: 14px; color: #999; margin-top: 8px; }
+.upload-area .icon { font-size: 28px; }
+.preview-img { max-width: 100%; border-radius: 8px; margin-bottom: 1rem; display: none; }
+.parse-status { font-size: 13px; color: #666; margin-bottom: 1rem; display: none; }
+</style>
+</head>
+<body>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('scan', event)">Scan Signal</button>
+  <button class="tab" onclick="switchTab('signal', event)">Manual Signal</button>
+  <button class="tab" onclick="switchTab('trade', event)">My Trade</button>
+</div>
+
+<!-- SCAN TAB -->
+<div id="section-scan" class="section active">
+  <div class="section-title">Scan signal from screenshot</div>
+
+  <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+    <div class="icon">📷</div>
+    <p>Tap to upload screenshot or drag & drop</p>
+  </div>
+  <input type="file" id="file-input" accept="image/*" style="display:none" onchange="handleFile(this.files[0])" />
+  <img id="preview-img" class="preview-img" />
+  <div id="parse-status" class="parse-status"></div>
+
+  <div id="scan-fields" style="display:none">
+    <div class="row">
+      <div class="field">
+        <label>Source</label>
+        <select id="sc-source">
+          <option>TFXC</option>
+          <option>Xnine FX+</option>
+          <option>Xnine FX</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Instrument</label>
+        <input type="text" id="sc-instrument" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Direction</label>
+        <select id="sc-direction">
+          <option>Long</option>
+          <option>Short</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Entry Zone</label>
+        <input type="text" id="sc-entry" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>SL</label>
+        <input type="number" id="sc-sl" step="any" />
+      </div>
+      <div class="field">
+        <label>TP1</label>
+        <input type="number" id="sc-tp1" step="any" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>TP2</label>
+        <input type="number" id="sc-tp2" step="any" />
+      </div>
+      <div class="field">
+        <label>TP3</label>
+        <input type="number" id="sc-tp3" step="any" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>TP4</label>
+        <input type="number" id="sc-tp4" step="any" />
+      </div>
+      <div class="field">
+        <label>TP5</label>
+        <input type="number" id="sc-tp5" step="any" />
+      </div>
+    </div>
+    <div class="field">
+      <label>Notes</label>
+      <textarea id="sc-notes" placeholder="Optional notes..."></textarea>
+    </div>
+    <button class="btn primary" onclick="logScannedSignal()">Log signal to Notion</button>
+    <button class="btn secondary" onclick="resetScan()" style="margin-top:8px;">Scan another</button>
+  </div>
+  <div id="status-scan" class="status"></div>
+</div>
+
+<!-- MANUAL SIGNAL TAB -->
+<div id="section-signal" class="section">
+  <div class="section-title">Log a signal</div>
+  <div class="row">
+    <div class="field">
+      <label>Source</label>
+      <select id="s-source">
+        <option>TFXC</option>
+        <option>Xnine FX+</option>
+        <option>Xnine FX</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Instrument</label>
+      <select id="s-instrument">
+        <option>XAUUSD</option>
+        <option>EURUSD</option>
+        <option>GBPUSD</option>
+        <option>BTCUSD</option>
+        <option>USDJPY</option>
+        <option>GBPJPY</option>
+        <option>XAGUSD</option>
+        <option>Other</option>
+      </select>
+    </div>
+  </div>
+  <div class="row">
+    <div class="field">
+      <label>Direction</label>
+      <select id="s-direction">
+        <option>Long</option>
+        <option>Short</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Entry Zone</label>
+      <input type="text" id="s-entry" placeholder="e.g. 2318-2322" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="field">
+      <label>SL</label>
+      <div class="input-with-na">
+        <input type="number" id="s-sl" placeholder="2305" step="any" />
+        <button class="na-btn" id="na-sl" onclick="toggleNA('s-sl','na-sl')">N/A</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>TP1</label>
+      <div class="input-with-na">
+        <input type="number" id="s-tp1" placeholder="2335" step="any" />
+        <button class="na-btn" id="na-tp1" onclick="toggleNA('s-tp1','na-tp1')">N/A</button>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="field">
+      <label>TP2</label>
+      <div class="input-with-na">
+        <input type="number" id="s-tp2" step="any" />
+        <button class="na-btn" id="na-tp2" onclick="toggleNA('s-tp2','na-tp2')">N/A</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>TP3</label>
+      <div class="input-with-na">
+        <input type="number" id="s-tp3" step="any" />
+        <button class="na-btn" id="na-tp3" onclick="toggleNA('s-tp3','na-tp3')">N/A</button>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="field">
+      <label>TP4</label>
+      <div class="input-with-na">
+        <input type="number" id="s-tp4" step="any" />
+        <button class="na-btn" id="na-tp4" onclick="toggleNA('s-tp4','na-tp4')">N/A</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>TP5</label>
+      <div class="input-with-na">
+        <input type="number" id="s-tp5" step="any" />
+        <button class="na-btn" id="na-tp5" onclick="toggleNA('s-tp5','na-tp5')">N/A</button>
+      </div>
+    </div>
+  </div>
+  <div class="field">
+    <label>Result</label>
+    <select id="s-result">
+      <option>Open</option>
+      <option>TP1 Hit</option>
+      <option>TP2 Hit</option>
+      <option>TP3 Hit</option>
+      <option>TP4 Hit</option>
+      <option>TP5 Hit</option>
+      <option>SL Hit</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Notes</label>
+    <textarea id="s-notes" placeholder="Optional notes..."></textarea>
+  </div>
+  <button class="btn primary" onclick="logSignal()">Log signal to Notion</button>
+  <div id="status-signal" class="status"></div>
+</div>
+
+<!-- TRADE TAB -->
+<div id="section-trade" class="section">
+  <div class="section-title">Log my trade</div>
+  <div class="row">
+    <div class="field">
+      <label>Broker</label>
+      <select id="t-broker">
+        <option>Vantage</option>
+        <option>Startrader</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Instrument</label>
+      <select id="t-instrument">
+        <option>XAUUSD</option>
+        <option>EURUSD</option>
+        <option>GBPUSD</option>
+        <option>BTCUSD</option>
+        <option>USDJPY</option>
+        <option>GBPJPY</option>
+        <option>XAGUSD</option>
+        <option>Other</option>
+      </select>
+    </div>
+  </div>
+  <div class="row">
+    <div class="field">
+      <label>Direction</label>
+      <select id="t-direction">
+        <option>Long</option>
+        <option>Short</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Followed Signal?</label>
+      <select id="t-followed">
+        <option>Yes</option>
+        <option>Partial</option>
+        <option>No</option>
+      </select>
+    </div>
+  </div>
+  <div class="row">
+    <div class="field"><label>Actual Entry</label><input type="number" id="t-entry" placeholder="2320" step="any" /></div>
+    <div class="field"><label>Actual Exit</label><input type="number" id="t-exit" placeholder="2335" step="any" /></div>
+  </div>
+  <div class="row">
+    <div class="field"><label>Lot Size</label><input type="number" id="t-lot" placeholder="0.2" step="any" /></div>
+    <div class="field"><label>P&L (EUR)</label><input type="number" id="t-pnl" placeholder="+350" step="any" /></div>
+  </div>
+  <div class="field">
+    <label>Exit Reason</label>
+    <select id="t-exit-reason">
+      <option>TP1</option>
+      <option>TP2</option>
+      <option>TP3</option>
+      <option>TP4</option>
+      <option>TP5</option>
+      <option>Manual</option>
+      <option>SL</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Notes</label>
+    <textarea id="t-notes" placeholder="Optional notes..."></textarea>
+  </div>
+  <button class="btn primary" onclick="logTrade()">Log trade to Notion</button>
+  <div id="status-trade" class="status"></div>
+</div>
+
+<script>
+const SIGNALS_WEBHOOK = 'https://hook.eu1.make.com/ccgmft39iu0ek8sd3nl2iaf6clgtd5ga';
+const TRADES_WEBHOOK = 'https://hook.eu1.make.com/un8prk2b9detbl8i9eb4m7cf7y51077a';
+const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages';
+const naFields = {};
+let currentImageBase64 = null;
+
+function switchTab(tab, event) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('section-' + tab).classList.add('active');
+}
+
+function setStatus(id, type, msg) {
+  const el = document.getElementById(id);
+  el.className = 'status ' + type;
+  el.textContent = msg;
+}
+
+function toggleNA(inputId, btnId) {
+  const input = document.getElementById(inputId);
+  const btn = document.getElementById(btnId);
+  if (naFields[inputId]) {
+    naFields[inputId] = false;
+    input.value = '';
+    input.disabled = false;
+    input.classList.remove('na');
+    btn.classList.remove('active');
+    btn.textContent = 'N/A';
+  } else {
+    naFields[inputId] = true;
+    input.value = '0';
+    input.disabled = true;
+    input.classList.add('na');
+    btn.classList.add('active');
+    btn.textContent = '✓ N/A';
+  }
+}
+
+function val(id) { return document.getElementById(id).value; }
+function numVal(id) {
+  const v = document.getElementById(id).value;
+  return v === '' ? 0 : Number(v);
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('upload-area').classList.add('dragover');
+}
+function handleDragLeave(e) {
+  document.getElementById('upload-area').classList.remove('dragover');
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-area').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) handleFile(file);
+}
+
+function handleFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const base64 = e.target.result.split(',')[1];
+    currentImageBase64 = base64;
+    const preview = document.getElementById('preview-img');
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+    parseSignalFromImage(base64, file.type || 'image/jpeg');
+  };
+  reader.readAsDataURL(file);
+}
+
+async function parseSignalFromImage(base64, mediaType) {
+  const statusEl = document.getElementById('parse-status');
+  statusEl.style.display = 'block';
+  statusEl.textContent = 'Reading signal from screenshot...';
+  document.getElementById('scan-fields').style.display = 'none';
+
+  const prompt = `This is a trading signal screenshot from a Telegram group. Extract all signal data and return ONLY valid JSON, no markdown, no explanation.
+
+Return exactly this structure:
+{
+  "instrument": "e.g. XAUUSD, EURUSD, BTCUSD etc",
+  "direction": "Long" or "Short" (Buy=Long, Sell=Short),
+  "entry_zone": "price or range as string, e.g. 2318-2322",
+  "sl": number or 0 if not found,
+  "tp1": number or 0 if not found,
+  "tp2": number or 0 if not found,
+  "tp3": number or 0 if not found,
+  "tp4": number or 0 if not found,
+  "tp5": number or 0 if not found,
+  "notes": "any other relevant info from the signal"
+}`;
+
+  try {
+    const res = await fetch(ANTHROPIC_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+            { type: 'text', text: prompt }
+          ]
+        }]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content.map(i => i.text || '').join('');
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+
+    document.getElementById('sc-instrument').value = parsed.instrument || '';
+    document.getElementById('sc-direction').value = parsed.direction === 'Short' ? 'Short' : 'Long';
+    document.getElementById('sc-entry').value = parsed.entry_zone || '';
+    document.getElementById('sc-sl').value = parsed.sl || '';
+    document.getElementById('sc-tp1').value = parsed.tp1 || '';
+    document.getElementById('sc-tp2').value = parsed.tp2 || '';
+    document.getElementById('sc-tp3').value = parsed.tp3 || '';
+    document.getElementById('sc-tp4').value = parsed.tp4 || '';
+    document.getElementById('sc-tp5').value = parsed.tp5 || '';
+    document.getElementById('sc-notes').value = parsed.notes || '';
+
+    statusEl.textContent = 'Signal parsed. Review and log.';
+    document.getElementById('scan-fields').style.display = 'block';
+  } catch(e) {
+    statusEl.textContent = 'Could not parse signal: ' + e.message;
+  }
+}
+
+async function logScannedSignal() {
+  setStatus('status-scan', 'loading', 'Sending to Notion...');
+  const today = new Date().toISOString().split('T')[0];
+  const source = val('sc-source');
+  const instrument = val('sc-instrument');
+  const direction = val('sc-direction');
+  try {
+    await fetch(SIGNALS_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: source + ' ' + instrument + ' ' + direction + ' ' + today,
+        date: today,
+        source: source,
+        instrument: instrument,
+        direction: direction,
+        entry_zone: val('sc-entry'),
+        sl: numVal('sc-sl'),
+        tp1: numVal('sc-tp1'),
+        tp2: numVal('sc-tp2'),
+        tp3: numVal('sc-tp3'),
+        tp4: numVal('sc-tp4'),
+        tp5: numVal('sc-tp5'),
+        result: 'Open',
+        notes: val('sc-notes')
+      })
+    });
+    setStatus('status-scan', 'success', 'Signal logged to Notion.');
+  } catch(e) {
+    setStatus('status-scan', 'error', 'Error: ' + e.message);
+  }
+}
+
+function resetScan() {
+  document.getElementById('preview-img').style.display = 'none';
+  document.getElementById('scan-fields').style.display = 'none';
+  document.getElementById('parse-status').style.display = 'none';
+  document.getElementById('status-scan').className = 'status';
+  document.getElementById('file-input').value = '';
+  currentImageBase64 = null;
+}
+
+async function postWebhook(url, data, statusId) {
+  setStatus(statusId, 'loading', 'Sending to Notion...');
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    setStatus(statusId, 'success', 'Logged to Notion.');
+  } catch(e) {
+    setStatus(statusId, 'error', 'Error: ' + e.message);
+  }
+}
+
+async function logSignal() {
+  const today = new Date().toISOString().split('T')[0];
+  await postWebhook(SIGNALS_WEBHOOK, {
+    name: val('s-source') + ' ' + val('s-instrument') + ' ' + val('s-direction') + ' ' + today,
+    date: today,
+    source: val('s-source'),
+    instrument: val('s-instrument'),
+    direction: val('s-direction'),
+    entry_zone: val('s-entry'),
+    sl: numVal('s-sl'),
+    tp1: numVal('s-tp1'),
+    tp2: numVal('s-tp2'),
+    tp3: numVal('s-tp3'),
+    tp4: numVal('s-tp4'),
+    tp5: numVal('s-tp5'),
+    result: val('s-result'),
+    notes: val('s-notes')
+  }, 'status-signal');
+}
+
+async function logTrade() {
+  const today = new Date().toISOString().split('T')[0];
+  await postWebhook(TRADES_WEBHOOK, {
+    name: val('t-broker') + ' ' + val('t-instrument') + ' ' + val('t-direction') + ' ' + today,
+    date: today,
+    broker: val('t-broker'),
+    instrument: val('t-instrument'),
+    direction: val('t-direction'),
+    actual_entry: numVal('t-entry'),
+    actual_exit: numVal('t-exit'),
+    lot_size: numVal('t-lot'),
+    pnl_eur: numVal('t-pnl'),
+    exit_reason: val('t-exit-reason'),
+    followed_signal: val('t-followed'),
+    notes: val('t-notes')
+  }, 'status-trade');
+}
+</script>
+</body>
+</html>
