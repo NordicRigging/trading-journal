@@ -34,8 +34,10 @@ textarea { resize: vertical; min-height: 60px; }
 .status.loading { background: #f5f5f5; color: #666; display: block; }
 .section-title { font-size: 13px; font-weight: 500; color: #999; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
 .trade-card { border: 1px solid #eee; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
-.trade-card-title { font-size: 14px; font-weight: 500; margin-bottom: 1rem; }
+.trade-card-title { font-size: 13px; color: #999; margin-bottom: 0.75rem; }
 .divider { border: none; border-top: 1px solid #f0f0f0; margin: 1rem 0; }
+.total-box { background: #f9f9f9; border-radius: 10px; padding: 12px 14px; margin-bottom: 1rem; display: flex; justify-content: space-between; font-size: 14px; }
+.total-box span:last-child { font-weight: 500; }
 .upload-area { border: 1.5px dashed #ddd; border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; margin-bottom: 1rem; }
 .upload-area:hover { border-color: #999; }
 .upload-area p { font-size: 14px; color: #999; margin-top: 8px; }
@@ -45,13 +47,6 @@ textarea { resize: vertical; min-height: 60px; }
 </head>
 <body>
 
-<div class="tabs">
-  <button class="tab active" onclick="switchTab('scan', event)">Scan Signal</button>
-  <button class="tab" onclick="switchTab('signal', event)">Manual Signal</button>
-  <button class="tab" onclick="switchTab('trade', event)">My Trades</button>
-</div>
-
-<!-- INSTRUMENTS -->
 <datalist id="instruments">
   <option>GBPUSD</option><option>EURUSD</option><option>XAUUSD</option>
   <option>BTCUSD</option><option>EURGBP</option><option>CADJPY</option>
@@ -61,10 +56,16 @@ textarea { resize: vertical; min-height: 60px; }
   <option>NZDJPY</option><option>EURAUD</option>
 </datalist>
 
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('scan', event)">Scan Signal</button>
+  <button class="tab" onclick="switchTab('signal', event)">Manual Signal</button>
+  <button class="tab" onclick="switchTab('trade', event)">My Trades</button>
+</div>
+
 <!-- SCAN TAB -->
 <div id="section-scan" class="section active">
   <div class="section-title">Scan signal from screenshot</div>
-  <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+  <div class="upload-area" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
     <div style="font-size:28px">📷</div>
     <p>Tap to upload screenshot or drag & drop</p>
   </div>
@@ -76,9 +77,7 @@ textarea { resize: vertical; min-height: 60px; }
       <div class="field">
         <label>Source</label>
         <select id="sc-source">
-          <option>TFXC</option>
-          <option>Xnine FX+</option>
-          <option>Xnine FX</option>
+          <option>TFXC</option><option>Xnine FX+</option><option>Xnine FX</option>
         </select>
       </div>
       <div class="field">
@@ -89,10 +88,7 @@ textarea { resize: vertical; min-height: 60px; }
     <div class="row">
       <div class="field">
         <label>Direction</label>
-        <select id="sc-direction">
-          <option>Long</option>
-          <option>Short</option>
-        </select>
+        <select id="sc-direction"><option>Long</option><option>Short</option></select>
       </div>
       <div class="field">
         <label>Entry Zone</label>
@@ -124,11 +120,7 @@ textarea { resize: vertical; min-height: 60px; }
   <div class="row">
     <div class="field">
       <label>Source</label>
-      <select id="s-source">
-        <option>TFXC</option>
-        <option>Xnine FX+</option>
-        <option>Xnine FX</option>
-      </select>
+      <select id="s-source"><option>TFXC</option><option>Xnine FX+</option><option>Xnine FX</option></select>
     </div>
     <div class="field">
       <label>Instrument</label>
@@ -138,10 +130,7 @@ textarea { resize: vertical; min-height: 60px; }
   <div class="row">
     <div class="field">
       <label>Direction</label>
-      <select id="s-direction">
-        <option>Long</option>
-        <option>Short</option>
-      </select>
+      <select id="s-direction"><option>Long</option><option>Short</option></select>
     </div>
     <div class="field">
       <label>Entry Zone</label>
@@ -152,14 +141,14 @@ textarea { resize: vertical; min-height: 60px; }
     <div class="field">
       <label>SL</label>
       <div class="input-with-na">
-        <input type="number" id="s-sl" placeholder="2305" step="any" />
+        <input type="number" id="s-sl" step="any" />
         <button class="na-btn" id="na-sl" onclick="toggleNA('s-sl','na-sl')">N/A</button>
       </div>
     </div>
     <div class="field">
       <label>TP1</label>
       <div class="input-with-na">
-        <input type="number" id="s-tp1" placeholder="2335" step="any" />
+        <input type="number" id="s-tp1" step="any" />
         <button class="na-btn" id="na-tp1" onclick="toggleNA('s-tp1','na-tp1')">N/A</button>
       </div>
     </div>
@@ -199,14 +188,9 @@ textarea { resize: vertical; min-height: 60px; }
   <div class="field">
     <label>Result</label>
     <select id="s-result">
-      <option>Open</option>
-      <option>TP1 Hit</option>
-      <option>TP2 Hit</option>
-      <option>TP3 Hit</option>
-      <option>TP4 Hit</option>
-      <option>TP5 Hit</option>
-      <option>Break Even</option>
-      <option>SL Hit</option>
+      <option>Open</option><option>TP1 Hit</option><option>TP2 Hit</option>
+      <option>TP3 Hit</option><option>TP4 Hit</option><option>TP5 Hit</option>
+      <option>Break Even</option><option>SL Hit</option>
     </select>
   </div>
   <div class="field"><label>Notes</label><textarea id="s-notes" placeholder="Optional notes..."></textarea></div>
@@ -219,35 +203,37 @@ textarea { resize: vertical; min-height: 60px; }
   <div class="section-title">Log my trades</div>
   <div class="row">
     <div class="field">
-      <label>Broker</label>
-      <select id="t-broker">
-        <option>Vantage</option>
-        <option>Startrader</option>
-      </select>
+      <label>Source</label>
+      <select id="t-source"><option>TFXC</option><option>Xnine FX+</option><option>Xnine FX</option></select>
     </div>
     <div class="field">
-      <label>Instrument</label>
-      <input type="text" id="t-instrument" list="instruments" placeholder="XAUUSD" />
+      <label>Broker</label>
+      <select id="t-broker"><option>Vantage</option><option>Startrader</option></select>
     </div>
   </div>
   <div class="row">
     <div class="field">
-      <label>Direction</label>
-      <select id="t-direction">
-        <option>Long</option>
-        <option>Short</option>
-      </select>
+      <label>Instrument</label>
+      <input type="text" id="t-instrument" list="instruments" placeholder="XAUUSD" />
     </div>
     <div class="field">
-      <label>Followed Signal?</label>
-      <select id="t-followed">
-        <option>Yes</option>
-        <option>Partial</option>
-        <option>No</option>
-      </select>
+      <label>Direction</label>
+      <select id="t-direction"><option>Long</option><option>Short</option></select>
     </div>
   </div>
+  <div class="row">
+    <div class="field">
+      <label>Followed Signal?</label>
+      <select id="t-followed"><option>Yes</option><option>Partial</option><option>No</option></select>
+    </div>
+    <div class="field">
+      <label>Risk %</label>
+      <input type="number" id="t-risk" placeholder="2" step="any" />
+    </div>
+  </div>
+
   <hr class="divider" />
+
   <div class="field">
     <label>How many trades did you open?</label>
     <select id="t-count" onchange="renderTradeCards()">
@@ -258,9 +244,28 @@ textarea { resize: vertical; min-height: 60px; }
       <option value="5">5 trades</option>
     </select>
   </div>
+
   <div id="trade-cards"></div>
+
+  <div class="total-box">
+    <span>Total Lots</span>
+    <span id="total-lots">0</span>
+  </div>
+  <div class="total-box">
+    <span>Total P&L</span>
+    <span id="total-pnl">€0</span>
+  </div>
+
+  <div class="field">
+    <label>Main Exit Reason</label>
+    <select id="t-exit-reason">
+      <option>TP1</option><option>TP2</option><option>TP3</option>
+      <option>TP4</option><option>TP5</option><option>Break Even</option>
+      <option>Manual</option><option>SL</option>
+    </select>
+  </div>
   <div class="field"><label>Notes</label><textarea id="t-notes" placeholder="Optional notes..."></textarea></div>
-  <button class="btn primary" onclick="logTrades()">Log all trades to Notion</button>
+  <button class="btn primary" onclick="logTrade()">Log to Notion</button>
   <div id="status-trade" class="status"></div>
 </div>
 
@@ -315,85 +320,79 @@ function renderTradeCards() {
   const count = parseInt(val('t-count'));
   const container = document.getElementById('trade-cards');
   container.innerHTML = '';
-  const exitOptions = ['TP1','TP2','TP3','TP4','TP5','Manual','SL'];
   for (let i = 1; i <= count; i++) {
-    const defaultExit = exitOptions[Math.min(i-1, 4)];
     const card = document.createElement('div');
     card.className = 'trade-card';
     card.innerHTML = `
       <div class="trade-card-title">Trade ${i}</div>
-      <div class="row3">
-        <div class="field">
-          <label>Entry</label>
-          <input type="number" id="t-entry-${i}" placeholder="0.0" step="any" />
-        </div>
-        <div class="field">
-          <label>Exit</label>
-          <input type="number" id="t-exit-${i}" placeholder="0.0" step="any" />
-        </div>
-        <div class="field">
-          <label>Lots</label>
-          <input type="number" id="t-lot-${i}" placeholder="0.01" step="any" />
-        </div>
-      </div>
       <div class="row">
         <div class="field">
-          <label>P&L (EUR)</label>
-          <input type="number" id="t-pnl-${i}" placeholder="+12.50" step="any" />
+          <label>Lots</label>
+          <input type="number" id="t-lot-${i}" placeholder="0.01" step="any" oninput="updateTotals()" />
         </div>
         <div class="field">
-          <label>Exit Reason</label>
-          <select id="t-exit-reason-${i}">
-            ${['TP1','TP2','TP3','TP4','TP5','Break Even','Manual','SL'].map(o => `<option${o === defaultExit ? ' selected' : ''}>${o}</option>`).join('')}
-          </select>
+          <label>P&L (EUR)</label>
+          <input type="number" id="t-pnl-${i}" placeholder="+12.50" step="any" oninput="updateTotals()" />
         </div>
       </div>
     `;
     container.appendChild(card);
   }
+  updateTotals();
 }
 
-async function logTrades() {
+function updateTotals() {
+  const count = parseInt(val('t-count'));
+  let totalLots = 0, totalPnl = 0;
+  for (let i = 1; i <= count; i++) {
+    totalLots += numVal(`t-lot-${i}`);
+    totalPnl += numVal(`t-pnl-${i}`);
+  }
+  document.getElementById('total-lots').textContent = parseFloat(totalLots.toFixed(4));
+  const pnlEl = document.getElementById('total-pnl');
+  pnlEl.textContent = `€${totalPnl >= 0 ? '+' : ''}${parseFloat(totalPnl.toFixed(2))}`;
+  pnlEl.style.color = totalPnl >= 0 ? '#1a7a3e' : '#c0392b';
+}
+
+async function logTrade() {
   const count = parseInt(val('t-count'));
   const today = new Date().toISOString().split('T')[0];
-  const broker = val('t-broker');
-  const instrument = val('t-instrument');
-  const direction = val('t-direction');
-  const followed = val('t-followed');
-  const notes = val('t-notes');
-  setStatus('status-trade', 'loading', `Sending ${count} trade(s) to Notion...`);
+  let totalLots = 0, totalPnl = 0;
+  for (let i = 1; i <= count; i++) {
+    totalLots += numVal(`t-lot-${i}`);
+    totalPnl += numVal(`t-pnl-${i}`);
+  }
+  setStatus('status-trade', 'loading', 'Sending to Notion...');
   try {
-    for (let i = 1; i <= count; i++) {
-      await fetch(TRADES_WEBHOOK, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: broker + ' ' + instrument + ' ' + direction + ' ' + today + (count > 1 ? ` #${i}` : ''),
-          date: today,
-          broker,
-          instrument,
-          direction,
-          actual_entry: numVal(`t-entry-${i}`),
-          actual_exit: numVal(`t-exit-${i}`),
-          lot_size: numVal(`t-lot-${i}`),
-          pnl_eur: numVal(`t-pnl-${i}`),
-          exit_reason: val(`t-exit-reason-${i}`),
-          followed_signal: followed,
-          notes
-        })
-      });
-    }
-    setStatus('status-trade', 'success', `${count} trade(s) logged to Notion.`);
+    await fetch(TRADES_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: val('t-broker') + ' ' + val('t-instrument') + ' ' + val('t-direction') + ' ' + today,
+        date: today,
+        source: val('t-source'),
+        broker: val('t-broker'),
+        instrument: val('t-instrument'),
+        direction: val('t-direction'),
+        followed_signal: val('t-followed'),
+        risk_percent: numVal('t-risk'),
+        trade_count: count,
+        total_lots: parseFloat(totalLots.toFixed(4)),
+        total_pnl: parseFloat(totalPnl.toFixed(2)),
+        exit_reason: val('t-exit-reason'),
+        notes: val('t-notes')
+      })
+    });
+    setStatus('status-trade', 'success', 'Logged to Notion.');
   } catch(e) {
     setStatus('status-trade', 'error', 'Error: ' + e.message);
   }
 }
 
-function handleDragOver(e) { e.preventDefault(); document.getElementById('upload-area').style.borderColor = '#999'; }
-function handleDragLeave(e) { document.getElementById('upload-area').style.borderColor = '#ddd'; }
+function handleDragOver(e) { e.preventDefault(); }
+function handleDragLeave(e) {}
 function handleDrop(e) {
   e.preventDefault();
-  document.getElementById('upload-area').style.borderColor = '#ddd';
   const file = e.dataTransfer.files[0];
   if (file && file.type.startsWith('image/')) handleFile(file);
 }
@@ -403,9 +402,8 @@ function handleFile(file) {
   const reader = new FileReader();
   reader.onload = (e) => {
     const base64 = e.target.result.split(',')[1];
-    const preview = document.getElementById('preview-img');
-    preview.src = e.target.result;
-    preview.style.display = 'block';
+    document.getElementById('preview-img').src = e.target.result;
+    document.getElementById('preview-img').style.display = 'block';
     parseSignalFromImage(base64, file.type || 'image/jpeg');
   };
   reader.readAsDataURL(file);
@@ -423,18 +421,14 @@ async function parseSignalFromImage(base64, mediaType) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-            { type: 'text', text: 'This is a trading signal. Extract data and return ONLY valid JSON:\n{"instrument":"e.g. XAUUSD","direction":"Long or Short (Buy=Long, Sell=Short)","entry_zone":"price or range","sl":number or 0,"tp1":number or 0,"tp2":number or 0,"tp3":number or 0,"tp4":number or 0,"tp5":number or 0,"notes":"any other info"}' }
-          ]
-        }]
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+          { type: 'text', text: 'Trading signal screenshot. Return ONLY valid JSON:\n{"instrument":"XAUUSD etc","direction":"Long or Short (Buy=Long, Sell=Short)","entry_zone":"price or range","sl":number or 0,"tp1":number or 0,"tp2":number or 0,"tp3":number or 0,"tp4":number or 0,"tp5":number or 0,"notes":"any other info"}' }
+        ]}]
       })
     });
     const data = await res.json();
-    const raw = data.content.map(i => i.text || '').join('');
-    const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    const parsed = JSON.parse(data.content.map(i => i.text || '').join('').replace(/```json|```/g, '').trim());
     document.getElementById('sc-instrument').value = parsed.instrument || '';
     document.getElementById('sc-direction').value = parsed.direction === 'Short' ? 'Short' : 'Long';
     document.getElementById('sc-entry').value = parsed.entry_zone || '';
