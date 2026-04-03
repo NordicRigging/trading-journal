@@ -205,6 +205,7 @@ textarea { resize: vertical; min-height: 60px; }
       <option>TP3 Hit</option>
       <option>TP4 Hit</option>
       <option>TP5 Hit</option>
+      <option>Break Even</option>
       <option>SL Hit</option>
     </select>
   </div>
@@ -343,7 +344,7 @@ function renderTradeCards() {
         <div class="field">
           <label>Exit Reason</label>
           <select id="t-exit-reason-${i}">
-            ${exitOptions.map(o => `<option${o === defaultExit ? ' selected' : ''}>${o}</option>`).join('')}
+            ${['TP1','TP2','TP3','TP4','TP5','Break Even','Manual','SL'].map(o => `<option${o === defaultExit ? ' selected' : ''}>${o}</option>`).join('')}
           </select>
         </div>
       </div>
