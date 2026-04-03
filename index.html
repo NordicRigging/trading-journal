@@ -28,29 +28,19 @@ textarea { resize: vertical; min-height: 60px; }
 .btn.primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
 .btn.primary:hover { opacity: 0.85; }
 .btn.secondary { border-color: #999; color: #444; }
-.btn.small { padding: 6px 12px; font-size: 13px; width: auto; margin-top: 0; }
 .status { margin-top: 1rem; padding: 10px 12px; border-radius: 8px; font-size: 13px; display: none; }
 .status.success { background: #f0faf4; color: #1a7a3e; display: block; }
 .status.error { background: #fff0f0; color: #c0392b; display: block; }
 .status.loading { background: #f5f5f5; color: #666; display: block; }
 .section-title { font-size: 13px; font-weight: 500; color: #999; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
 .trade-card { border: 1px solid #eee; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
-.trade-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-.trade-card-title { font-size: 14px; font-weight: 500; }
-.pnl-display { font-size: 13px; padding: 4px 10px; border-radius: 6px; background: #f5f5f5; color: #666; }
-.pnl-display.positive { background: #f0faf4; color: #1a7a3e; }
-.pnl-display.negative { background: #fff0f0; color: #c0392b; }
-.total-pnl { padding: 12px; border-radius: 8px; background: #f5f5f5; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
-.total-pnl .amount { font-size: 18px; font-weight: 500; }
-.total-pnl.positive .amount { color: #1a7a3e; }
-.total-pnl.negative .amount { color: #c0392b; }
+.trade-card-title { font-size: 14px; font-weight: 500; margin-bottom: 1rem; }
 .divider { border: none; border-top: 1px solid #f0f0f0; margin: 1rem 0; }
 .upload-area { border: 1.5px dashed #ddd; border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; margin-bottom: 1rem; }
 .upload-area:hover { border-color: #999; }
 .upload-area p { font-size: 14px; color: #999; margin-top: 8px; }
 .preview-img { max-width: 100%; border-radius: 8px; margin-bottom: 1rem; display: none; }
 .parse-status { font-size: 13px; color: #666; margin-bottom: 1rem; display: none; }
-.pip-info { font-size: 12px; color: #999; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -60,6 +50,16 @@ textarea { resize: vertical; min-height: 60px; }
   <button class="tab" onclick="switchTab('signal', event)">Manual Signal</button>
   <button class="tab" onclick="switchTab('trade', event)">My Trades</button>
 </div>
+
+<!-- INSTRUMENTS -->
+<datalist id="instruments">
+  <option>GBPUSD</option><option>EURUSD</option><option>XAUUSD</option>
+  <option>BTCUSD</option><option>EURGBP</option><option>CADJPY</option>
+  <option>USDCAD</option><option>AUDCAD</option><option>USDJPY</option>
+  <option>AUDUSD</option><option>GBPJPY</option><option>EURCAD</option>
+  <option>USDCHF</option><option>AUDJPY</option><option>NZDUSD</option>
+  <option>NZDJPY</option><option>EURAUD</option>
+</datalist>
 
 <!-- SCAN TAB -->
 <div id="section-scan" class="section active">
@@ -83,7 +83,7 @@ textarea { resize: vertical; min-height: 60px; }
       </div>
       <div class="field">
         <label>Instrument</label>
-        <input type="text" id="sc-instrument" />
+        <input type="text" id="sc-instrument" list="instruments" />
       </div>
     </div>
     <div class="row">
@@ -132,16 +132,7 @@ textarea { resize: vertical; min-height: 60px; }
     </div>
     <div class="field">
       <label>Instrument</label>
-      <select id="s-instrument">
-        <option>XAUUSD</option>
-        <option>EURUSD</option>
-        <option>GBPUSD</option>
-        <option>BTCUSD</option>
-        <option>USDJPY</option>
-        <option>GBPJPY</option>
-        <option>XAGUSD</option>
-        <option>Other</option>
-      </select>
+      <input type="text" id="s-instrument" list="instruments" placeholder="XAUUSD" />
     </div>
   </div>
   <div class="row">
@@ -225,8 +216,6 @@ textarea { resize: vertical; min-height: 60px; }
 <!-- TRADE TAB -->
 <div id="section-trade" class="section">
   <div class="section-title">Log my trades</div>
-
-  <!-- Common fields -->
   <div class="row">
     <div class="field">
       <label>Broker</label>
@@ -237,16 +226,7 @@ textarea { resize: vertical; min-height: 60px; }
     </div>
     <div class="field">
       <label>Instrument</label>
-      <select id="t-instrument" onchange="updatePipInfo()">
-        <option>XAUUSD</option>
-        <option>EURUSD</option>
-        <option>GBPUSD</option>
-        <option>BTCUSD</option>
-        <option>USDJPY</option>
-        <option>GBPJPY</option>
-        <option>XAGUSD</option>
-        <option>Other</option>
-      </select>
+      <input type="text" id="t-instrument" list="instruments" placeholder="XAUUSD" />
     </div>
   </div>
   <div class="row">
@@ -266,10 +246,7 @@ textarea { resize: vertical; min-height: 60px; }
       </select>
     </div>
   </div>
-
   <hr class="divider" />
-
-  <!-- Number of trades -->
   <div class="field">
     <label>How many trades did you open?</label>
     <select id="t-count" onchange="renderTradeCards()">
@@ -280,14 +257,7 @@ textarea { resize: vertical; min-height: 60px; }
       <option value="5">5 trades</option>
     </select>
   </div>
-
   <div id="trade-cards"></div>
-
-  <div id="total-pnl-box" class="total-pnl" style="display:none">
-    <span>Total P&L</span>
-    <span class="amount" id="total-pnl-amount">€0.00</span>
-  </div>
-
   <div class="field"><label>Notes</label><textarea id="t-notes" placeholder="Optional notes..."></textarea></div>
   <button class="btn primary" onclick="logTrades()">Log all trades to Notion</button>
   <div id="status-trade" class="status"></div>
@@ -298,11 +268,6 @@ const SIGNALS_WEBHOOK = 'https://hook.eu1.make.com/ccgmft39iu0ek8sd3nl2iaf6clgtd
 const TRADES_WEBHOOK = 'https://hook.eu1.make.com/un8prk2b9detbl8i9eb4m7cf7y51077a';
 const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages';
 const naFields = {};
-
-const PIP_VALUES = {
-  XAUUSD: 1, XAGUSD: 1, BTCUSD: 1,
-  EURUSD: 10, GBPUSD: 10, USDJPY: 10, GBPJPY: 10
-};
 
 function switchTab(tab, event) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -345,95 +310,47 @@ function numVal(id) {
   return el.value === '' ? 0 : Number(el.value);
 }
 
-function calcPnL(entry, exit, lots, direction, instrument) {
-  if (!entry || !exit || !lots) return 0;
-  const diff = direction === 'Long' ? exit - entry : entry - exit;
-  const pipVal = PIP_VALUES[instrument] || 10;
-  return parseFloat((diff * lots * pipVal * 100).toFixed(2));
-}
-
 function renderTradeCards() {
   const count = parseInt(val('t-count'));
   const container = document.getElementById('trade-cards');
   container.innerHTML = '';
-
+  const exitOptions = ['TP1','TP2','TP3','TP4','TP5','Manual','SL'];
   for (let i = 1; i <= count; i++) {
+    const defaultExit = exitOptions[Math.min(i-1, 4)];
     const card = document.createElement('div');
     card.className = 'trade-card';
     card.innerHTML = `
-      <div class="trade-card-header">
-        <span class="trade-card-title">Trade ${i}</span>
-        <span class="pnl-display" id="pnl-display-${i}">P&L: —</span>
-      </div>
+      <div class="trade-card-title">Trade ${i}</div>
       <div class="row3">
         <div class="field">
           <label>Entry</label>
-          <input type="number" id="t-entry-${i}" placeholder="0.0" step="any" oninput="updatePnL(${i})" />
+          <input type="number" id="t-entry-${i}" placeholder="0.0" step="any" />
         </div>
         <div class="field">
           <label>Exit</label>
-          <input type="number" id="t-exit-${i}" placeholder="0.0" step="any" oninput="updatePnL(${i})" />
+          <input type="number" id="t-exit-${i}" placeholder="0.0" step="any" />
         </div>
         <div class="field">
           <label>Lots</label>
-          <input type="number" id="t-lot-${i}" placeholder="0.01" step="any" oninput="updatePnL(${i})" />
+          <input type="number" id="t-lot-${i}" placeholder="0.01" step="any" />
         </div>
       </div>
-      <div class="field">
-        <label>Exit Reason</label>
-        <select id="t-exit-reason-${i}">
-          <option>TP1</option>
-          <option value="TP2" ${i >= 2 ? 'selected' : ''}>TP2</option>
-          <option value="TP3" ${i >= 3 ? 'selected' : ''}>TP3</option>
-          <option>TP4</option>
-          <option>TP5</option>
-          <option>Manual</option>
-          <option>SL</option>
-        </select>
+      <div class="row">
+        <div class="field">
+          <label>P&L (EUR)</label>
+          <input type="number" id="t-pnl-${i}" placeholder="+12.50" step="any" />
+        </div>
+        <div class="field">
+          <label>Exit Reason</label>
+          <select id="t-exit-reason-${i}">
+            ${exitOptions.map(o => `<option${o === defaultExit ? ' selected' : ''}>${o}</option>`).join('')}
+          </select>
+        </div>
       </div>
     `;
     container.appendChild(card);
   }
-  document.getElementById('total-pnl-box').style.display = count > 1 ? 'flex' : 'none';
 }
-
-function updatePnL(i) {
-  const entry = numVal(`t-entry-${i}`);
-  const exit = numVal(`t-exit-${i}`);
-  const lots = numVal(`t-lot-${i}`);
-  const direction = val('t-direction');
-  const instrument = val('t-instrument');
-  const pnl = calcPnL(entry, exit, lots, direction, instrument);
-  const display = document.getElementById(`pnl-display-${i}`);
-  if (entry && exit && lots) {
-    display.textContent = `P&L: €${pnl >= 0 ? '+' : ''}${pnl}`;
-    display.className = `pnl-display ${pnl >= 0 ? 'positive' : 'negative'}`;
-  } else {
-    display.textContent = 'P&L: —';
-    display.className = 'pnl-display';
-  }
-  updateTotalPnL();
-}
-
-function updateTotalPnL() {
-  const count = parseInt(val('t-count'));
-  const direction = val('t-direction');
-  const instrument = val('t-instrument');
-  let total = 0;
-  for (let i = 1; i <= count; i++) {
-    const entry = numVal(`t-entry-${i}`);
-    const exit = numVal(`t-exit-${i}`);
-    const lots = numVal(`t-lot-${i}`);
-    total += calcPnL(entry, exit, lots, direction, instrument);
-  }
-  total = parseFloat(total.toFixed(2));
-  const box = document.getElementById('total-pnl-box');
-  const amountEl = document.getElementById('total-pnl-amount');
-  amountEl.textContent = `€${total >= 0 ? '+' : ''}${total}`;
-  box.className = `total-pnl ${total >= 0 ? 'positive' : 'negative'}`;
-}
-
-function updatePipInfo() { updateTotalPnL(); }
 
 async function logTrades() {
   const count = parseInt(val('t-count'));
@@ -443,33 +360,25 @@ async function logTrades() {
   const direction = val('t-direction');
   const followed = val('t-followed');
   const notes = val('t-notes');
-
   setStatus('status-trade', 'loading', `Sending ${count} trade(s) to Notion...`);
-
   try {
     for (let i = 1; i <= count; i++) {
-      const entry = numVal(`t-entry-${i}`);
-      const exit = numVal(`t-exit-${i}`);
-      const lots = numVal(`t-lot-${i}`);
-      const exitReason = val(`t-exit-reason-${i}`);
-      const pnl = calcPnL(entry, exit, lots, direction, instrument);
-
       await fetch(TRADES_WEBHOOK, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: broker + ' ' + instrument + ' ' + direction + ' ' + today + (count > 1 ? ` #${i}` : ''),
           date: today,
-          broker: broker,
-          instrument: instrument,
-          direction: direction,
-          actual_entry: entry,
-          actual_exit: exit,
-          lot_size: lots,
-          pnl_eur: pnl,
-          exit_reason: exitReason,
+          broker,
+          instrument,
+          direction,
+          actual_entry: numVal(`t-entry-${i}`),
+          actual_exit: numVal(`t-exit-${i}`),
+          lot_size: numVal(`t-lot-${i}`),
+          pnl_eur: numVal(`t-pnl-${i}`),
+          exit_reason: val(`t-exit-reason-${i}`),
           followed_signal: followed,
-          notes: notes
+          notes
         })
       });
     }
@@ -506,7 +415,6 @@ async function parseSignalFromImage(base64, mediaType) {
   statusEl.style.display = 'block';
   statusEl.textContent = 'Reading signal from screenshot...';
   document.getElementById('scan-fields').style.display = 'none';
-
   try {
     const res = await fetch(ANTHROPIC_API, {
       method: 'POST',
@@ -526,7 +434,6 @@ async function parseSignalFromImage(base64, mediaType) {
     const data = await res.json();
     const raw = data.content.map(i => i.text || '').join('');
     const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
-
     document.getElementById('sc-instrument').value = parsed.instrument || '';
     document.getElementById('sc-direction').value = parsed.direction === 'Short' ? 'Short' : 'Long';
     document.getElementById('sc-entry').value = parsed.entry_zone || '';
@@ -537,7 +444,6 @@ async function parseSignalFromImage(base64, mediaType) {
     document.getElementById('sc-tp4').value = parsed.tp4 || '';
     document.getElementById('sc-tp5').value = parsed.tp5 || '';
     document.getElementById('sc-notes').value = parsed.notes || '';
-
     statusEl.textContent = 'Signal parsed. Review and log.';
     document.getElementById('scan-fields').style.display = 'block';
   } catch(e) {
